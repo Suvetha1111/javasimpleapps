@@ -1,8 +1,7 @@
-
-import java.util.Scanner;
+//flightbooking...
+import java.util.*;
 
 class Flight {
-
     private String flightName;
     private int availableSeats = 50;
     private double ticketPrice = 5000;
@@ -27,12 +26,14 @@ class Flight {
         this.ticketPrice += amount;
     }
 
-    public Ticket[] bookTickets(Passenger passenger, int numberOfSeats) {
+    public Ticket[] bookTickets(Passenger passenger, int numberOfSeats, Map<String, Ticket> ticketMap) {
         if (availableSeats >= numberOfSeats) {
             Ticket[] tickets = new Ticket[numberOfSeats];
             for (int i = 0; i < numberOfSeats; i++) {
-                tickets[i] = new Ticket(passenger, this, availableSeats--, ticketPrice);
-                updateTicketPrice(200);  // Increase price after booking
+                Ticket ticket = new Ticket(passenger, this, availableSeats--, ticketPrice);
+                tickets[i] = ticket;
+                ticketMap.put(ticket.getTicketID(), ticket); // Store ticket by ID
+                updateTicketPrice(200);
             }
             return tickets;
         } else {
@@ -42,8 +43,13 @@ class Flight {
     }
 
     public void cancelTicket(Ticket ticket) {
-        availableSeats++;
-        updateTicketPrice(-200);  // Decrease price after cancellation
+        if (ticket != null) {
+            availableSeats++;
+            updateTicketPrice(-200);
+            System.out.println("Ticket " + ticket.getTicketID() + " has been cancelled.");
+        } else {
+            System.out.println("Ticket not found.");
+        }
     }
 
     public String getFlightDetails() {
@@ -52,7 +58,6 @@ class Flight {
 }
 
 class Passenger {
-
     private String name;
     private int age;
     private String contactNumber;
@@ -69,7 +74,6 @@ class Passenger {
 }
 
 class Ticket {
-
     private static int ticketCounter = 1;
     private String ticketID;
     private Passenger passenger;
@@ -85,6 +89,10 @@ class Ticket {
         this.price = price;
     }
 
+    public String getTicketID() {
+        return ticketID;
+    }
+
     public String printTicketDetails() {
         return "Ticket ID: " + ticketID + ", "
                 + passenger.getPassengerDetails() + ", "
@@ -93,7 +101,6 @@ class Ticket {
 }
 
 public class FlightBooking {
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -101,6 +108,9 @@ public class FlightBooking {
         System.out.print("Enter flight name: ");
         String flightName = scanner.nextLine();
         Flight flight = new Flight(flightName);
+
+        // Map to store tickets by their ticket ID
+        Map<String, Ticket> ticketMap = new HashMap<>();
 
         while (true) {
             System.out.println("\nMenu:");
@@ -124,7 +134,7 @@ public class FlightBooking {
 
                     System.out.print("Enter number of seats to book: ");
                     int numberOfSeats = scanner.nextInt();
-                    Ticket[] tickets = flight.bookTickets(passenger, numberOfSeats);
+                    Ticket[] tickets = flight.bookTickets(passenger, numberOfSeats, ticketMap);
 
                     if (tickets != null) {
                         for (Ticket ticket : tickets) {
@@ -136,10 +146,13 @@ public class FlightBooking {
                 case 2: // Cancel Ticket
                     System.out.print("Enter ticket ID to cancel: ");
                     String ticketID = scanner.next();
-                    // In a complete implementation, you'd locate the ticket by ID
-                    // Here, we'll just assume cancellation is successful
-                    System.out.println("Ticket cancelled.");
-                    flight.cancelTicket(null); // Modify to cancel a specific ticket
+                    Ticket ticketToCancel = ticketMap.get(ticketID); // Find ticket by ID
+                    if (ticketToCancel != null) {
+                        flight.cancelTicket(ticketToCancel);
+                        ticketMap.remove(ticketID); // Remove ticket from the map
+                    } else {
+                        System.out.println("Ticket ID not found.");
+                    }
                     break;
 
                 case 3: // View Flight Details
