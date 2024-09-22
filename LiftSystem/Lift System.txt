@@ -1,0 +1,123 @@
+//Lift System
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class Lift {
+    private String id;
+    private int currentFloor;
+    private int capacity;
+    private boolean isUnderMaintenance;
+    private int stops;
+
+    public Lift(String id, int capacity) {
+        this.id = id;
+        this.currentFloor = 0; // Initially all lifts are at ground floor
+        this.capacity = capacity;
+        this.isUnderMaintenance = false;
+        this.stops = 0;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public int getCurrentFloor() {
+        return currentFloor;
+    }
+
+    public void moveTo(int floor) {
+        this.currentFloor = floor;
+    }
+
+    public boolean isAvailable() {
+        return !isUnderMaintenance && (id.equals("L5") || (currentFloor <= 5 && (id.equals("L1") || id.equals("L2"))) || (currentFloor >= 6 && (id.equals("L3") || id.equals("L4"))));
+    }
+
+    public void setUnderMaintenance(boolean isUnderMaintenance) {
+        this.isUnderMaintenance = isUnderMaintenance;
+    }
+
+    public int getStops() {
+        return stops;
+    }
+
+    public void resetStops() {
+        stops = 0;
+    }
+
+    public void incrementStops() {
+        stops++;
+    }
+}
+
+class LiftSystem {
+    private List<Lift> lifts;
+
+    public LiftSystem() {
+        lifts = new ArrayList<>();
+        lifts.add(new Lift("L1", 5));
+        lifts.add(new Lift("L2", 5));
+        lifts.add(new Lift("L3", 10));
+        lifts.add(new Lift("L4", 10));
+        lifts.add(new Lift("L5", 10));
+    }
+
+    public void displayPositions() {
+        System.out.println("Lift Positions:");
+        for (Lift lift : lifts) {
+            System.out.println(lift.getId() + ": Floor " + lift.getCurrentFloor());
+        }
+    }
+
+    public Lift assignLift(int source, int destination) {
+        Lift nearestLift = null;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (Lift lift : lifts) {
+            if (lift.isAvailable()) {
+                int distance = Math.abs(lift.getCurrentFloor() - source);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestLift = lift;
+                } else if (distance == minDistance) {
+                    // Check direction if the distance is equal
+                    if ((destination < source && lift.getCurrentFloor() > source) || (destination > source && lift.getCurrentFloor() < source)) {
+                        nearestLift = lift;
+                    }
+                }
+            }
+        }
+
+        if (nearestLift != null) {
+            nearestLift.moveTo(source);
+            System.out.println(nearestLift.getId() + " is assigned.");
+            nearestLift.moveTo(destination);
+        }
+        
+        return nearestLift;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        LiftSystem liftSystem = new LiftSystem();
+        liftSystem.displayPositions();
+
+        while (true) {
+            System.out.print("Enter source floor (or -1 to exit): ");
+            int source = scanner.nextInt();
+            if (source == -1) {
+                break;
+            }
+
+            System.out.print("Enter destination floor: ");
+            int destination = scanner.nextInt();
+            liftSystem.assignLift(source, destination);
+            liftSystem.displayPositions();
+        }
+
+        scanner.close();
+    }
+}
