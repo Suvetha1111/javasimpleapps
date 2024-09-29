@@ -1,229 +1,188 @@
-
-suvetha s
-10:00 AM (2 hours ago)
-to me
-
-import java.util.Arrays;
-
 class Member {
-    String name;
-    String gender;
-    Member dad;
-    Member mother;
-    Member[] sister;
-    Member[] brother;
+    private String name;
+    private String gender;
+    private Member dad;
+    private Member mother;
+    private Member[] sister;
+    private Member[] brother;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
+    // Constructor
+    public Member(String name, String gender) {
         this.name = name;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
         this.gender = gender;
     }
 
-    public Member getDad() {
-        return dad;
-    }
+    // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setDad(Member dad) {
-        this.dad = dad;
-    }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
-    public Member getMother() {
-        return mother;
-    }
+    public Member getDad() { return dad; }
+    public void setDad(Member dad) { this.dad = dad; }
 
-    public void setMother(Member mother) {
-        this.mother = mother;
-    }
+    public Member getMother() { return mother; }
+    public void setMother(Member mother) { this.mother = mother; }
 
-    public Member[] getSister() {
-        return sister;
-    }
+    public Member[] getSister() { return sister; }
+    public void setSister(Member[] sister) { this.sister = sister; }
 
-    public void setSister(Member[] sister) {
-        this.sister = sister;
-    }
-
-    public Member[] getBrother() {
-        return brother;
-    }
-
-    public void setBrother(Member[] brother) {
-        this.brother = brother;
-    }
+    public Member[] getBrother() { return brother; }
+    public void setBrother(Member[] brother) { this.brother = brother; }
 
     @Override
     public String toString() {
-        return "Member [name=" + name + ", gender=" + gender + ", dad=" + dad + ", mother=" + mother + "]";
+        return "Member{name='" + name + "', gender='" + gender + "'}";
     }
-
 }
-
 class ParentRelationUtility {
-    static Member[] members;
+    private Member[] members;
+    private int count;
 
-    static int count;
-
-    public static void loadFamily(String[][] familArray) {
+    // Constructor initializing the members array
+    public ParentRelationUtility(int size) {
+        members = new Member[size];
         count = 0;
-        members = new Member[familArray.length + (2 * familArray.length)];
-
-        for (String[] member : familArray) {
-
-            addToMembers(member);
-
-        }
-        addSiblings(familArray);
-        // printFamily();
     }
 
-    private static void addSiblings(String[][] familArray) {
-        for (String[] member : familArray) {
-            Member currentMember = getMemberInstace(member[0]);
-            Member[][] sibMembers = getSiblings(currentMember);
-            currentMember.setBrother(sibMembers[0]);
-            currentMember.setSister(sibMembers[1]);
-
-        }
-    }
-
-    private static Member[][] getSiblings(Member currentMember) {
-        Member[][] sibMember = new Member[2][count];
-        int brotherIndex = 0;
-        int sisterIndex = 0;
-        Member currentDad = currentMember.getDad();
-        for (int index = 0; index < count; index++) {
-            Member nextPerson = members[index];
-            Member nextPersonDad = nextPerson.getDad();
-            if (currentDad == null) {
-                return sibMember;
+    // Create or get a member
+    private Member createOrGetMember(String name, String gender) {
+        for (int i = 0; i < count; i++) {
+            if (members[i].getName().equals(name)) {
+                return members[i]; // Return existing member
             }
-            if (nextPersonDad != null && !currentMember.getName().equals(nextPerson.getName())
-                    && nextPersonDad.getName().equals(currentDad.getName())) {
-                if (nextPerson.getGender().equals("m")) {
-                    sibMember[0][brotherIndex++] = nextPerson;
-                } else {
-                    sibMember[1][sisterIndex++] = nextPerson;
-                }
-            }
-
         }
-        return sibMember;
-    }
-
-    private static void printFamily() {
-
-        for (int index = 0; index < count; index++) {
-
-            System.out.println(members[index].toString());
-        }
-    }
-
-    private static void addToMembers(String[] member) {
-        Member currentMember = new Member();
-        members[count++] = currentMember;
-        currentMember.setName(member[0]);
-        currentMember.setGender(member[1]);
-        currentMember.setDad(createMember(member[2], "m"));
-        currentMember.setMother(createMember(member[3], "f"));
-
-    }
-
-    private static Member createMember(String name, String gender) {
-        if (name == null)
-            return null;
-        Member member = getMemberInstace(name);
-
-        member.setGender(gender);
-
+        Member member = new Member(name, gender); // Create new member
+        members[count++] = member; // Add to the array
         return member;
     }
 
-    private static Member getMemberInstace(String name) {
-        for (int index = 0; index < count; index++) {
-            if (members[index].getName().equals(name)) {
-                return members[index];
-            }
+    // Load family data
+    public void loadFamily(String[][] familyArray) {
+        for (String[] memberData : familyArray) {
+            // Get or create each family member
+            Member member = createOrGetMember(memberData[0], memberData[1]);
+            Member dad = createOrGetMember(memberData[2], "Male");
+            Member mother = createOrGetMember(memberData[3], "Female");
 
+            // Set family relations
+            member.setDad(dad);
+            member.setMother(mother);
         }
-        members[count++] = new Member();
-        members[count - 1].setName(name);
-        return members[count - 1];
 
+        // After members are loaded, assign siblings
+        addSiblings(familyArray);
     }
 
-    public static void getCousin(String name) {
-        Member member = getMemberInstace(name);
-        Member memberDad = member.getDad();
-        Member memberMother = member.getMother();
-        if (memberMother.getMother() != null) {
-            System.out.println("from dad side");
-            for (Member dadSiter : memberDad.getSister()) {
-                getChild(dadSiter, member);
-            }
+    // Assign siblings based on the family array
+    private void addSiblings(String[][] familyArray) {
+        for (int i = 0; i < count; i++) {
+            Member member = members[i];
+            Member dad = member.getDad();
 
-            if (memberMother.getMother() != null) {
-                System.out.println("from mother side");
-                for (Member motherBrother : memberMother.getBrother()) {
-                    getChild(motherBrother, member);
+            // Get all siblings with the same dad
+            Member[] siblings = getSiblings(dad);
+
+            // Divide brothers and sisters
+            assignSiblings(member, siblings);
+        }
+    }
+
+    // Get siblings for the given dad
+    private Member[] getSiblings(Member dad) {
+        Member[] siblings = new Member[count];
+        int siblingCount = 0;
+        
+        // Collect all members with the same dad
+        for (int i = 0; i < count; i++) {
+            if (members[i].getDad() != null && members[i].getDad().equals(dad)) {
+                siblings[siblingCount++] = members[i];
+            }
+        }
+
+        // Trim the array to the correct size
+        Member[] result = new Member[siblingCount];
+        System.arraycopy(siblings, 0, result, 0, siblingCount);
+        return result;
+    }
+
+    // Assign brothers and sisters based on the gender
+    private void assignSiblings(Member member, Member[] siblings) {
+        Member[] brothers = new Member[siblings.length];
+        Member[] sisters = new Member[siblings.length];
+        int brotherCount = 0;
+        int sisterCount = 0;
+
+        for (Member sibling : siblings) {
+            if (!sibling.equals(member)) { // Exclude the current member
+                if (sibling.getGender().equals("Male")) {
+                    brothers[brotherCount++] = sibling;
+                } else {
+                    sisters[sisterCount++] = sibling;
                 }
             }
         }
+
+        // Trim arrays to correct size
+        Member[] actualBrothers = new Member[brotherCount];
+        Member[] actualSisters = new Member[sisterCount];
+        System.arraycopy(brothers, 0, actualBrothers, 0, brotherCount);
+        System.arraycopy(sisters, 0, actualSisters, 0, sisterCount);
+
+        member.setBrother(actualBrothers);
+        member.setSister(actualSisters);
     }
 
-    private static void getChild(Member person, Member member) {
-        if (person != null) {
-            if (member.getGender().equals("m")) {
-                getDauter(person);
-            } else {
-                getSon(person);
+    // Get paternal and maternal cousins
+    public Member[] getCousins(String name) {
+        Member member = getMemberByName(name);
+
+        if (member == null) {
+            return new Member[0]; // No cousins if the member doesn't exist
+        }
+
+        Member[] paternalCousins = getCousinsFromParent(member.getDad());
+        Member[] maternalCousins = getCousinsFromParent(member.getMother());
+
+        // Combine both paternal and maternal cousins
+        Member[] allCousins = new Member[paternalCousins.length + maternalCousins.length];
+        System.arraycopy(paternalCousins, 0, allCousins, 0, paternalCousins.length);
+        System.arraycopy(maternalCousins, 0, allCousins, paternalCousins.length, maternalCousins.length);
+
+        return allCousins;
+    }
+
+    // Get cousins from the parent side (dad or mother)
+    private Member[] getCousinsFromParent(Member parent) {
+        if (parent == null) {
+            return new Member[0];
+        }
+
+        Member[] siblings = getSiblings(parent); // Parent's siblings (aunts and uncles)
+        Member[] cousins = new Member[count];
+        int cousinCount = 0;
+
+        for (Member sibling : siblings) {
+            for (Member siblingChild : getSiblings(sibling)) {
+                cousins[cousinCount++] = siblingChild;
             }
         }
+
+        // Trim the array to the correct size
+        Member[] result = new Member[cousinCount];
+        System.arraycopy(cousins, 0, result, 0, cousinCount);
+        return result;
     }
 
-    private static void getSon(Member member) {
-        for (int index = 0; index < count; index++) {
-            if (member.getGender().equals("m") && members[index].getDad().getName().equals(member.getName())
-                    && members[index].getGender().equals("m")) {
-                System.out.println(member.getName());
-            } else if (members[index].getMother().getName().equals(member.getName())
-                    && members[index].getGender().equals("m")) {
-                System.out.println(member.getName());
+    // Helper to get a member by name
+    private Member getMemberByName(String name) {
+        for (int i = 0; i < count; i++) {
+            if (members[i].getName().equals(name)) {
+                return members[i];
             }
         }
+        return null;
     }
-
-    private static void getDauter(Member member) {
-        for (int index = 0; index < count; index++) {
-            if (members[index].getDad() != null) {
-                if (member.getGender().equals("m") && members[index].getDad().getName().equals(member.getName())
-                        && members[index].getGender().equals("f")) {
-                    System.out.println(member.getName());
-                } else if (members[index].getMother().getName().equals(member.getName())
-                        && members[index].getGender().equals("f")) {
-                    System.out.println(member.getName());
-                }
-            }
-        }
-    }
-
 }
 
-public class ParentRelation {
-    public static void main(String[] args) {
-        String[][] familArray = { { "a", "m", null, null }, { "b", "m", "a", "c" }, { "d", "m", "b", "e" },
-                { "f", "f", "a", "c" }, { "g", "f", "h", "f" } };
-        ParentRelationUtility.loadFamily(familArray);
-        ParentRelationUtility.getCousin("d");
-    }
-
-}
